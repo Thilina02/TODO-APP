@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useTodos } from './hooks/useTodos'; 
+import { useTodos } from './hooks/useTodos';
+import { useDarkMode } from './hooks/useDarkMode';
 import { TodoForm } from './components/TodoForm';
-import { TodoFilter } from './components/TodoFilter'; 
+import { TodoFilter } from './components/TodoFilter';
+import { DarkModeToggle } from './components/DarkModeToggle';
 import { DroppableZone } from './components/DroppableZone';
 import type { Todo } from './types/todo';
 import { TodoItem } from './components/TodoItem';
@@ -67,12 +69,13 @@ function App() {
     reorderTodos,
     updateTodoOnDrop,
   } = useTodos();
+  const { isDark, toggleDarkMode } = useDarkMode();
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,  
+        distance: 8, 
       },
     }),
     useSensor(KeyboardSensor, {
@@ -93,7 +96,7 @@ function App() {
     const overId = over.id as string;
      
     if (overId === 'pending-zone' || overId === 'completed-zone') {
-      const todo = allTodos.find((t) => t.id === active.id); 
+      const todo = allTodos.find((t) => t.id === active.id);  
       if (todo) {
         const newCompleted = overId === 'completed-zone';
         if (todo.completed !== newCompleted) {
@@ -105,7 +108,7 @@ function App() {
  
     if (active.id !== over.id) {
       const oldIndex = todos.findIndex((todo) => todo.id === active.id);  
-      const newIndex = todos.findIndex((todo) => todo.id === over.id);  
+      const newIndex = todos.findIndex((todo) => todo.id === over.id); 
       
       if (oldIndex !== -1 && newIndex !== -1) {
         reorderTodos(oldIndex, newIndex);
@@ -121,24 +124,21 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 via-pink-50 to-orange-50 dark:from-gray-900 dark:via-indigo-900 dark:via-purple-900 dark:to-gray-900 transition-colors duration-300">
       <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 max-w-6xl">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 gap-4 animate-fadeIn">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             ✨ Todo Master
           </h1>
+          <DarkModeToggle isDark={isDark} onToggle={toggleDarkMode} />
         </div>
 
-        {/* Todo Form */}
         <div className="mb-6 animate-slideIn">
           <TodoForm onSubmit={addTodo} />
         </div>
 
-        {/* Filter Tabs */}
         <div className="mb-6 animate-slideIn">
           <TodoFilter filter={filter} onFilterChange={setFilter} />
         </div>
 
-        {/* Stats */}
         <div className="mb-6 grid grid-cols-3 gap-3 sm:gap-4 text-center animate-fadeIn">
           <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl p-3 sm:p-4 shadow-lg border-2 border-blue-200 dark:border-blue-700">
             <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">{allTodos.length}</div>
@@ -154,16 +154,14 @@ function App() {
           </div>
         </div>
 
-        {/* Drag and Drop Context */}
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-        > 
+        >
           {filter === 'all' && (
             <div className="space-y-6">
-              {/* Pending Drop Zone */}
               <DroppableZone
                 id="pending-zone"
                 className="p-4 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 border-2 border-dashed border-blue-300 dark:border-blue-700 min-h-[120px] transition-all duration-300"
@@ -195,7 +193,6 @@ function App() {
                 </SortableContext>
               </DroppableZone>
 
-              {/* Completed Drop Zone */}
               <DroppableZone
                 id="completed-zone"
                 className="p-4 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-dashed border-green-300 dark:border-green-700 min-h-[120px] transition-all duration-300"
@@ -229,7 +226,6 @@ function App() {
             </div>
           )}
 
-          {/* Filtered List View (Pending or Completed) */}
           {filter !== 'all' && (
             <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-4 sm:p-6 shadow-xl border-2 border-purple-200 dark:border-purple-700">
               <SortableContext 
@@ -277,7 +273,6 @@ function App() {
             </div>
           )}
 
-          {/* Drag Overlay */}
           <DragOverlay>
             {activeTodo ? (
               <div className="opacity-90 rotate-3 scale-105">
