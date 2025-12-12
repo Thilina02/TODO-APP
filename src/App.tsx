@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useTodos } from './hooks/useTodos';
-import { TodoForm } from './components/TodoForm'; 
+import { useTodos } from './hooks/useTodos'; 
+import { TodoForm } from './components/TodoForm';
+import { TodoFilter } from './components/TodoFilter'; 
 import { DroppableZone } from './components/DroppableZone';
 import type { Todo } from './types/todo';
 import { TodoItem } from './components/TodoItem';
-
+ 
 const SortableTodoItem = ({ todo, onToggle, onEdit, onDelete }: {
   todo: Todo;
   onToggle: (id: string) => void;
@@ -29,7 +30,7 @@ const SortableTodoItem = ({ todo, onToggle, onEdit, onDelete }: {
       ref={setNodeRef} 
       style={style} 
       className={`relative ${isDragging ? 'z-50' : ''}`}
-    >
+    > 
       <div
         {...attributes}
         {...listeners}
@@ -53,7 +54,7 @@ const SortableTodoItem = ({ todo, onToggle, onEdit, onDelete }: {
   );
 };
 
-function App() {
+function App() { 
   const {
     todos,
     allTodos,
@@ -65,23 +66,24 @@ function App() {
     toggleTodoComplete,
     reorderTodos,
     updateTodoOnDrop,
-  } = useTodos(); 
+  } = useTodos();
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, 
+        distance: 8,  
       },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+ 
   const handleDragStart = (event: any) => {
     setActiveId(event.active.id as string);
   };
-
+ 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
@@ -89,7 +91,7 @@ function App() {
     if (!over) return;
 
     const overId = over.id as string;
-    
+     
     if (overId === 'pending-zone' || overId === 'completed-zone') {
       const todo = allTodos.find((t) => t.id === active.id); 
       if (todo) {
@@ -100,25 +102,26 @@ function App() {
       }
       return;
     }
-
+ 
     if (active.id !== over.id) {
-      const oldIndex = todos.findIndex((todo) => todo.id === active.id); 
-      const newIndex = todos.findIndex((todo) => todo.id === over.id); 
+      const oldIndex = todos.findIndex((todo) => todo.id === active.id);  
+      const newIndex = todos.findIndex((todo) => todo.id === over.id);  
       
       if (oldIndex !== -1 && newIndex !== -1) {
         reorderTodos(oldIndex, newIndex);
       }
     }
   };
-
+ 
   const activeTodo = activeId ? allTodos.find((todo) => todo.id === activeId) : null;
-
+ 
   const pendingTodos = allTodos.filter((todo) => !todo.completed);
   const completedTodos = allTodos.filter((todo) => todo.completed);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 via-pink-50 to-orange-50 dark:from-gray-900 dark:via-indigo-900 dark:via-purple-900 dark:to-gray-900 transition-colors duration-300">
       <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 max-w-6xl">
+        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 gap-4 animate-fadeIn">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             ✨ Todo Master
@@ -129,7 +132,12 @@ function App() {
         <div className="mb-6 animate-slideIn">
           <TodoForm onSubmit={addTodo} />
         </div>
-   
+
+        {/* Filter Tabs */}
+        <div className="mb-6 animate-slideIn">
+          <TodoFilter filter={filter} onFilterChange={setFilter} />
+        </div>
+
         {/* Stats */}
         <div className="mb-6 grid grid-cols-3 gap-3 sm:gap-4 text-center animate-fadeIn">
           <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl p-3 sm:p-4 shadow-lg border-2 border-blue-200 dark:border-blue-700">
@@ -152,8 +160,7 @@ function App() {
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-        >
-          {/* All View with Drop Zones */}
+        > 
           {filter === 'all' && (
             <div className="space-y-6">
               {/* Pending Drop Zone */}
