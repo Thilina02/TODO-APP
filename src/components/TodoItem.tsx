@@ -101,7 +101,7 @@ export const TodoItem = ({ todo, onToggle, onEdit, onDelete }: TodoItemProps) =>
             onClick={handleSave}
             className="flex-1 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 active:scale-95"
           >
-            Save
+            Modify
           </button>
           <button
             onClick={handleCancel}
