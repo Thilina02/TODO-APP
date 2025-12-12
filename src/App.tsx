@@ -16,11 +16,11 @@ const SortableTodoItem = ({ todo, onToggle, onEdit, onDelete, isDragEnabled }: {
   onToggle: (id: string) => void;
   onEdit: (id: string, updates: Partial<Todo>) => void;
   onDelete: (id: string) => void;
-  isDragEnabled: boolean;  
+  isDragEnabled: boolean;
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: todo.id,
-    disabled: !isDragEnabled,  
+    disabled: !isDragEnabled,
   });
 
   const style = {
@@ -36,7 +36,7 @@ const SortableTodoItem = ({ todo, onToggle, onEdit, onDelete, isDragEnabled }: {
       style={style}
       className={`relative transition-all duration-200 ${isDragging ? 'scale-105 shadow-2xl' : 'scale-100'}`}
     >
-      <div className="group relative"> 
+      <div className="group relative">
         {isDragEnabled && (
           <div
             {...attributes}
@@ -53,12 +53,14 @@ const SortableTodoItem = ({ todo, onToggle, onEdit, onDelete, isDragEnabled }: {
           </div>
         )}
 
-        <TodoItem
-          todo={todo}
-          onToggle={onToggle}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
+        <div className={isDragEnabled ? "pr-20 sm:pr-0 sm:pt-12" : ""}>
+          <TodoItem
+            todo={todo}
+            onToggle={onToggle}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        </div>
       </div>
     </div>
   );
@@ -102,7 +104,7 @@ function App() {
     if (!over) return;
 
     const overId = over.id as string;
- 
+
     if (overId === 'pending-zone' || overId === 'completed-zone') {
       const todo = allTodos.find((t) => t.id === active.id);
       if (todo) {
@@ -113,11 +115,11 @@ function App() {
       }
       return;
     }
- 
+
     if (active.id !== over.id) {
       const activeTodo = allTodos.find((t) => t.id === active.id);
       const overTodo = allTodos.find((t) => t.id === over.id);
- 
+
       if (activeTodo && overTodo && activeTodo.completed === overTodo.completed) {
         const todosInSameStatus = allTodos.filter(t => t.completed === activeTodo.completed);
         const oldIndex = todosInSameStatus.findIndex((todo) => todo.id === active.id);
