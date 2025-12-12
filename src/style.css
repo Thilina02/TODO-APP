@@ -1,168 +1,93 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  padding: 20px;
-}
-
-.container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 30px;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-h1 {
-  text-align: center;
-  color: #667eea;
-  margin-bottom: 30px;
-  font-size: 2.5rem;
-}
-
-.input-section {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 30px;
-}
-
-input[type="text"] {
-  flex: 1;
-  padding: 12px 15px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s;
-}
-
-input[type="text"]:focus {
-  outline: none;
-  border-color: #667eea;
-}
-
-button {
-  padding: 12px 24px;
-  background: #667eea;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-button:hover {
-  background: #5568d3;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-.stat-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-  color: white;
-}
-
-.stat-number {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.stat-label {
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-.todo-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.todo-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  transition: all 0.3s;
-}
-
-.todo-item:hover {
-  background: #e9ecef;
-  transform: translateX(5px);
-}
-
-.todo-item input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-}
-
-.todo-text {
-  flex: 1;
-  font-size: 16px;
-  color: #333;
-}
-
-.todo-item.completed .todo-text {
-  text-decoration: line-through;
-  color: #999;
-}
-
-.delete-btn {
-  padding: 8px 16px;
-  background: #dc3545;
-  font-size: 14px;
-}
-
-.delete-btn:hover {
-  background: #c82333;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  color: #999;
-}
-
-.empty-state p {
-  font-size: 18px;
-}
-
-@media (max-width: 600px) {
-  .container {
-    padding: 20px;
+@layer utilities {
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 
-  h1 {
-    font-size: 2rem;
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
 
-  .stats {
-    grid-template-columns: 1fr;
+  @keyframes slideOut {
+    from {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(100px) scale(0.8);
+    }
   }
 
-  .input-section {
-    flex-direction: column;
+  @keyframes bounceIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  .animate-slideIn {
+    animation: slideIn 0.4s ease-out;
+  }
+
+  .animate-slideOut {
+    animation: slideOut 0.3s ease-in forwards;
+  }
+
+  .animate-bounceIn {
+    animation: bounceIn 0.5s ease-out;
+  }
+
+  .todo-item-enter {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  .todo-item-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  }
+
+  .todo-item-exit {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .todo-item-exit-active {
+    opacity: 0;
+    transform: translateX(100px);
+    transition: opacity 0.3s ease-in, transform 0.3s ease-in;
   }
 }
