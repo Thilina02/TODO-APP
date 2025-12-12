@@ -15,16 +15,70 @@ export const TodoItem = ({ todo, onToggle, onEdit, onDelete }: TodoItemProps) =>
   const [editDueDate, setEditDueDate] = useState(todo.dueDate || '');
   const [isDeleting, setIsDeleting] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
+  const [errors, setErrors] = useState({
+    title: '',
+    description: '',
+  });
 
   useEffect(() => {
     if (!isEditing) {
       setEditTitle(todo.title);
       setEditDescription(todo.description || '');
       setEditDueDate(todo.dueDate || '');
+      setErrors({ title: '', description: '' });
     }
   }, [todo.title, todo.description, todo.dueDate, isEditing]);
 
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  const validateTitle = (value: string): string => {
+    const trimmedValue = value.trim();
+    if (trimmedValue.length === 0) {
+      return 'Title is required';
+    }
+    if (trimmedValue.length < 5) {
+      return 'Title must be at least 5 characters';
+    }
+    if (trimmedValue.length > 50) {
+      return 'Title must not exceed 50 characters';
+    }
+    return '';
+  };
+
+  const validateDescription = (value: string): string => {
+    if (value.trim().length > 250) {
+      return 'Description must not exceed 250 characters';
+    }
+    return '';
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEditTitle(value);
+    setErrors(prev => ({ ...prev, title: validateTitle(value) }));
+  };
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setEditDescription(value);
+    setErrors(prev => ({ ...prev, description: validateDescription(value) }));
+  };
+
   const handleSave = () => {
+    const titleError = validateTitle(editTitle);
+    const descriptionError = validateDescription(editDescription);
+
+    if (titleError || descriptionError) {
+      setErrors({
+        title: titleError,
+        description: descriptionError,
+      });
+      return;
+    }
+
     if (editTitle.trim()) {
       onEdit(todo.id, {
         title: editTitle.trim(),
@@ -39,6 +93,7 @@ export const TodoItem = ({ todo, onToggle, onEdit, onDelete }: TodoItemProps) =>
     setEditTitle(todo.title);
     setEditDescription(todo.description || '');
     setEditDueDate(todo.dueDate || '');
+    setErrors({ title: '', description: '' });
     setIsEditing(false);
   };
 
@@ -75,31 +130,84 @@ export const TodoItem = ({ todo, onToggle, onEdit, onDelete }: TodoItemProps) =>
   if (isEditing) {
     return (
       <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 shadow-lg border-2 border-blue-300 dark:border-blue-600 animate-bounceIn transform transition-all duration-300">
-        <input
-          type="text"
-          value={editTitle}
-          onChange={(e) => setEditTitle(e.target.value)}
-          className="w-full px-4 py-3 mb-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-base"
-          placeholder="Todo title"
-          autoFocus
-        />
-        <textarea
-          value={editDescription}
-          onChange={(e) => setEditDescription(e.target.value)}
-          className="w-full px-4 py-3 mb-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all duration-200 text-base"
-          placeholder="Description (optional)"
-          rows={3}
-        />
-        <input
-          type="date"
-          value={editDueDate}
-          onChange={(e) => setEditDueDate(e.target.value)}
-          className="w-full px-4 py-3 mb-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-base"
-        />
+        <div className="mb-3">
+          <input
+            type="text"
+            value={editTitle}
+            onChange={handleTitleChange}
+            maxLength={50}
+            className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all duration-200 text-base ${
+              errors.title
+                ? 'border-red-500 dark:border-red-500 focus:ring-red-500'
+                : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+            }`}
+            placeholder="Todo title (min 5 characters)"
+            autoFocus
+          />
+          <div className="flex justify-between items-center mt-1">
+            <div>
+              {errors.title && (
+                <p className="text-red-500 dark:text-red-400 text-xs font-medium">{errors.title}</p>
+              )}
+            </div>
+            <p className={`text-xs ${
+              editTitle.trim().length < 5 || editTitle.trim().length > 50
+                ? 'text-red-500 dark:text-red-400 font-medium'
+                : 'text-gray-500 dark:text-gray-400'
+            }`}>
+              {editTitle.trim().length}/50
+            </p>
+          </div>
+        </div>
+
+        <div className="mb-3">
+          <textarea
+            value={editDescription}
+            onChange={handleDescriptionChange}
+            maxLength={250}
+            className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 resize-none transition-all duration-200 text-base ${
+              errors.description
+                ? 'border-red-500 dark:border-red-500 focus:ring-red-500'
+                : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+            }`}
+            placeholder="Description (optional)"
+            rows={3}
+          />
+          <div className="flex justify-between items-center mt-1">
+            <div>
+              {errors.description && (
+                <p className="text-red-500 dark:text-red-400 text-xs font-medium">{errors.description}</p>
+              )}
+            </div>
+            <p className={`text-xs ${
+              editDescription.trim().length > 250
+                ? 'text-red-500 dark:text-red-400 font-medium'
+                : 'text-gray-500 dark:text-gray-400'
+            }`}>
+              {editDescription.trim().length}/250
+            </p>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <input
+            type="date"
+            value={editDueDate}
+            onChange={(e) => setEditDueDate(e.target.value)}
+            onClick={(e) => e.currentTarget.showPicker?.()}
+            min={getTodayDate()}
+            className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 text-base cursor-pointer"
+          />
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Only future dates are allowed
+          </p>
+        </div>
+
         <div className="flex gap-3">
           <button
             onClick={handleSave}
-            className="flex-1 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 active:scale-95"
+            disabled={!!errors.title || !!errors.description || editTitle.trim().length < 5}
+            className="flex-1 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:from-green-500 disabled:hover:to-green-600"
           >
             Modify
           </button>

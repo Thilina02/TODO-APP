@@ -28,8 +28,8 @@ export const TodoForm = ({ onSubmit }: TodoFormProps) => {
     if (trimmedValue.length < 5) {
       return 'Title must be at least 5 characters';
     }
-    if (trimmedValue.length > 100) {
-      return 'Title must not exceed 100 characters';
+    if (trimmedValue.length > 50) {
+      return 'Title must not exceed 50 characters';
     }
     return '';
   };
@@ -117,7 +117,7 @@ export const TodoForm = ({ onSubmit }: TodoFormProps) => {
           id="title"
           value={title}
           onChange={handleTitleChange}
-          maxLength={100}
+          maxLength={50}
           className={`w-full px-4 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all ${errors.title
             ? 'border-red-500 dark:border-red-500 focus:ring-red-500'
             : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
@@ -131,11 +131,11 @@ export const TodoForm = ({ onSubmit }: TodoFormProps) => {
               <p className="text-red-500 dark:text-red-400 text-xs font-medium">{errors.title}</p>
             )}
           </div>
-          <p className={`text-xs ${title.trim().length < 5 || title.trim().length > 100
+          <p className={`text-xs ${title.trim().length < 5 || title.trim().length > 50
             ? 'text-red-500 dark:text-red-400 font-medium'
             : 'text-gray-500 dark:text-gray-400'
             }`}>
-            {title.trim().length}/100
+            {title.trim().length}/50
           </p>
         </div>
       </div>

@@ -41,11 +41,11 @@ const SortableTodoItem = ({ todo, onToggle, onEdit, onDelete, isDragEnabled }: {
           <div
             {...attributes}
             {...listeners}
-            className="absolute top-2 right-2 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 cursor-grab active:cursor-grabbing px-3 py-1.5 bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-600 hover:to-purple-600 text-white text-xs font-semibold rounded-full shadow-lg transition-all duration-200 z-20 flex items-center gap-1.5 hover:scale-105 active:scale-95"
+            className="absolute top-2 left-2 sm:left-1/2 sm:-translate-x-1/2 cursor-grab active:cursor-grabbing px-2 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-600 hover:to-purple-600 text-white text-xs font-semibold rounded-full shadow-lg transition-all duration-200 z-20 flex items-center gap-1 sm:gap-1.5 hover:scale-105 active:scale-95 touch-none"
             title="Drag to move between zones"
-            onMouseDown={(e) => e.stopPropagation()}
+            style={{ touchAction: 'none' }}
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 8h16M4 16h16" />
             </svg>
             <span className="hidden sm:inline">Drag to move</span>
@@ -53,7 +53,7 @@ const SortableTodoItem = ({ todo, onToggle, onEdit, onDelete, isDragEnabled }: {
           </div>
         )}
 
-        <div className={isDragEnabled ? "pr-20 sm:pr-0 sm:pt-12" : ""}>
+        <div className={isDragEnabled ? "pt-10 sm:pt-12" : ""}>
           <TodoItem
             todo={todo}
             onToggle={onToggle}
@@ -85,7 +85,7 @@ function App() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
