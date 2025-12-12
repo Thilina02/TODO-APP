@@ -15,7 +15,9 @@ export const DroppableZone = ({ id, children, className = '' }: DroppableZonePro
   return (
     <div
       ref={setNodeRef}
-      className={`${className} ${isOver ? 'ring-4 ring-blue-400 dark:ring-blue-600' : ''} transition-all duration-200`}
+      className={`${className} ${
+        isOver ? 'animate-dropZone ring-4 ring-blue-400 dark:ring-blue-500 scale-[1.02]' : ''
+      } transition-all duration-300`}
     >
       {children}
     </div>

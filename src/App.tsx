@@ -10,41 +10,49 @@ import { DarkModeToggle } from './components/DarkModeToggle';
 import { DroppableZone } from './components/DroppableZone';
 import type { Todo } from './types/todo';
 import { TodoItem } from './components/TodoItem';
- 
-const SortableTodoItem = ({ todo, onToggle, onEdit, onDelete }: {
+
+const SortableTodoItem = ({ todo, onToggle, onEdit, onDelete, isDragEnabled }: {
   todo: Todo;
   onToggle: (id: string) => void;
   onEdit: (id: string, updates: Partial<Todo>) => void;
   onDelete: (id: string) => void;
+  isDragEnabled: boolean;  
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: todo.id,
+    disabled: !isDragEnabled,  
   });
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: transition || 'transform 200ms cubic-bezier(0.4, 0, 0.2, 1)',
     opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : 'auto',
   };
 
   return (
-    <div 
-      ref={setNodeRef} 
-      style={style} 
-      className={`relative ${isDragging ? 'z-50' : ''}`}
-    > 
-      <div
-        {...attributes}
-        {...listeners}
-        className="absolute right-16 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-all duration-200 z-10 opacity-0 group-hover:opacity-100"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
-        </svg>
-      </div>
-      
-      <div className="group">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`relative transition-all duration-200 ${isDragging ? 'scale-105 shadow-2xl' : 'scale-100'}`}
+    >
+      <div className="group relative"> 
+        {isDragEnabled && (
+          <div
+            {...attributes}
+            {...listeners}
+            className="absolute top-2 right-2 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 cursor-grab active:cursor-grabbing px-3 py-1.5 bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-600 hover:to-purple-600 text-white text-xs font-semibold rounded-full shadow-lg transition-all duration-200 z-20 flex items-center gap-1.5 hover:scale-105 active:scale-95"
+            title="Drag to move between zones"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 8h16M4 16h16" />
+            </svg>
+            <span className="hidden sm:inline">Drag to move</span>
+            <span className="sm:hidden">Drag</span>
+          </div>
+        )}
+
         <TodoItem
           todo={todo}
           onToggle={onToggle}
@@ -56,7 +64,7 @@ const SortableTodoItem = ({ todo, onToggle, onEdit, onDelete }: {
   );
 };
 
-function App() { 
+function App() {
   const {
     todos,
     allTodos,
@@ -75,18 +83,18 @@ function App() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, 
+        distance: 8,
       },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
- 
+
   const handleDragStart = (event: any) => {
     setActiveId(event.active.id as string);
   };
- 
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
@@ -94,9 +102,9 @@ function App() {
     if (!over) return;
 
     const overId = over.id as string;
-     
+ 
     if (overId === 'pending-zone' || overId === 'completed-zone') {
-      const todo = allTodos.find((t) => t.id === active.id);  
+      const todo = allTodos.find((t) => t.id === active.id);
       if (todo) {
         const newCompleted = overId === 'completed-zone';
         if (todo.completed !== newCompleted) {
@@ -107,17 +115,23 @@ function App() {
     }
  
     if (active.id !== over.id) {
-      const oldIndex = todos.findIndex((todo) => todo.id === active.id);  
-      const newIndex = todos.findIndex((todo) => todo.id === over.id); 
-      
-      if (oldIndex !== -1 && newIndex !== -1) {
-        reorderTodos(oldIndex, newIndex);
+      const activeTodo = allTodos.find((t) => t.id === active.id);
+      const overTodo = allTodos.find((t) => t.id === over.id);
+ 
+      if (activeTodo && overTodo && activeTodo.completed === overTodo.completed) {
+        const todosInSameStatus = allTodos.filter(t => t.completed === activeTodo.completed);
+        const oldIndex = todosInSameStatus.findIndex((todo) => todo.id === active.id);
+        const newIndex = todosInSameStatus.findIndex((todo) => todo.id === over.id);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+          reorderTodos(oldIndex, newIndex);
+        }
       }
     }
   };
- 
+
   const activeTodo = activeId ? allTodos.find((todo) => todo.id === activeId) : null;
- 
+
   const pendingTodos = allTodos.filter((todo) => !todo.completed);
   const completedTodos = allTodos.filter((todo) => todo.completed);
 
@@ -169,7 +183,7 @@ function App() {
                 <h2 className="text-lg sm:text-xl font-bold text-blue-700 dark:text-blue-300 mb-4 flex items-center gap-2">
                   <span>📋</span> Pending Tasks ({pendingTodos.length})
                 </h2>
-                <SortableContext 
+                <SortableContext
                   items={pendingTodos.map((todo) => todo.id)}
                   strategy={verticalListSortingStrategy}
                 >
@@ -186,6 +200,7 @@ function App() {
                           onToggle={toggleTodoComplete}
                           onEdit={editTodo}
                           onDelete={removeTodo}
+                          isDragEnabled={true}
                         />
                       ))
                     )}
@@ -200,7 +215,7 @@ function App() {
                 <h2 className="text-lg sm:text-xl font-bold text-green-700 dark:text-green-300 mb-4 flex items-center gap-2">
                   <span>✅</span> Completed Tasks ({completedTodos.length})
                 </h2>
-                <SortableContext 
+                <SortableContext
                   items={completedTodos.map((todo) => todo.id)}
                   strategy={verticalListSortingStrategy}
                 >
@@ -217,6 +232,7 @@ function App() {
                           onToggle={toggleTodoComplete}
                           onEdit={editTodo}
                           onDelete={removeTodo}
+                          isDragEnabled={true}
                         />
                       ))
                     )}
@@ -228,7 +244,7 @@ function App() {
 
           {filter !== 'all' && (
             <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-4 sm:p-6 shadow-xl border-2 border-purple-200 dark:border-purple-700">
-              <SortableContext 
+              <SortableContext
                 items={todos.map((todo) => todo.id)}
                 strategy={verticalListSortingStrategy}
               >
@@ -251,8 +267,8 @@ function App() {
                       No todos found
                     </h3>
                     <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
-                      {filter === 'completed' 
-                        ? 'Complete some tasks to see them here!' 
+                      {filter === 'completed'
+                        ? 'Complete some tasks to see them here!'
                         : 'Get started by creating a new todo!'}
                     </p>
                   </div>
@@ -265,6 +281,7 @@ function App() {
                         onToggle={toggleTodoComplete}
                         onEdit={editTodo}
                         onDelete={removeTodo}
+                        isDragEnabled={false}
                       />
                     ))}
                   </div>
@@ -273,9 +290,14 @@ function App() {
             </div>
           )}
 
-          <DragOverlay>
+          <DragOverlay
+            dropAnimation={{
+              duration: 300,
+              easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+            }}
+          >
             {activeTodo ? (
-              <div className="opacity-90 rotate-3 scale-105">
+              <div className="opacity-90 animate-dragOverlay shadow-2xl">
                 <TodoItem
                   todo={activeTodo}
                   onToggle={toggleTodoComplete}
